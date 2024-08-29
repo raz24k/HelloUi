@@ -23,4 +23,3 @@ artifacts:
     - appspec.yml
     - scripts/**/* 
     - build/**/*
-  #test
