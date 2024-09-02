@@ -1,25 +1,28 @@
 version: 0.2
-
 phases:
   install:
     runtime-versions:
       nodejs: 18
-
     commands:
-      # install npm
       - npm install
-
   build:
     commands:
-      # run build script
-      - npm run build
-
+      - >
+        if git diff --quiet HEAD~1 HEAD -- ./src ./public ./scripts
+        ./package.json; then
+          echo "No relevant changes detected, skipping build."
+          exit 0
+        else
+          npm run build
+        fi
 artifacts:
-  # include all files required to run the application
   files:
     - public/**/*
     - src/**/*
     - package.json
     - appspec.yml
     - scripts/**/*
-    - build/**/* 
+    - build/**/*
+  discard-paths: yes
+  base-directory: build
+  enable-symlinks: yes
