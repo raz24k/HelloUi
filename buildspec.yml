@@ -23,6 +23,3 @@ artifacts:
     - appspec.yml
     - scripts/**/*
     - build/**/*
-  discard-paths: yes
-  base-directory: build
-  enable-symlinks: yes
