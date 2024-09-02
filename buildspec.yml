@@ -5,14 +5,19 @@ phases:
       nodejs: 18
     commands:
       - npm install
+  pre_build:
+    commands:
+      - git fetch --depth=2
   build:
     commands:
-      - >
-        if git diff --quiet HEAD~1 HEAD -- ./src ./public ./scripts
-        ./package.json; then
-          echo "No relevant changes detected, skipping build."
+      - |
+        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "No changes detected, skipping build."
           exit 0
         else
+          echo "Files changed:"
+          echo "$CHANGED_FILES"
           npm run build
         fi
 artifacts:
