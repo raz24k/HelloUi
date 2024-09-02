@@ -1,32 +1,25 @@
 version: 0.2
+
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
+
     commands:
-echo Checking if there are any changes in the repository...
-      # Check if there are any changes in the last commit
-if git diff --name-only HEAD~1 | grep -q .; then
-          echo "Changes detected. Proceeding with npm install and build...";
-          npm install;
-        else
-          echo "No changes detected. Skipping build and install.";
-          exit 0;  # Skip the remaining steps
-        fi
-  pre_build:
-    commands:
-echo Pre-build stage...
+      # install npm
+      - npm install
+
   build:
     commands:
-echo Build stage...
-npm run build;  # Replace with your actual build command
-  post_build:
-    commands:
-echo Post-build stage...
-      # Add any post-build commands here
+      # run build script
+      - npm run build
+
 artifacts:
+  # include all files required to run the application
   files:
     - public/**/*
     - src/**/*
     - package.json
     - appspec.yml
     - scripts/**/*
-    - build/**/*
+    - build/**/* 
