@@ -1,30 +1,44 @@
 version: 0.2
+
 phases:
   install:
     runtime-versions:
-      nodejs: 18
-    commands:
-      - npm install
+      nodejs: 18  # Specifies Node.js version 18 for the build environment
+      python: 3.x  # Ensure Python is available
+
   pre_build:
     commands:
-      - git fetch --depth=2
+      - "echo Checking for the latest updated repository to build the output to increase"
+      - "pip install requests"  # Install requests library
+      - "python check_latest_commit.py"  # Call the Python script to check the latest commit
+      - "export CONTENT=$(cat out.txt)"  # Store the result in a variable
+      - "echo Content of out.txt: $CONTENT"
+      - "mkdir -p artifact_output"  # Ensure the artifact_output directory exists
+      - "touch artifact_output/.keep"  # Create a dummy file to ensure the directory is not empty
+
   build:
     commands:
       - |
-        CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
-        if [ -z "$CHANGED_FILES" ]; then
-          echo "No changes detected, skipping build."
-          exit 0
+        if [ "$CONTENT" = "frontend" ]; then
+          echo "Detected frontend update. Proceeding with build..."
+          npm install   # Installs all dependencies listed in package.json
+          npm run build # Runs the build script defined in package.json
+
+          echo "Preparing artifacts for upload..."
+          cp -r public/* artifact_output/  # Copy public directory contents
+          cp -r src/* artifact_output/     # Copy src directory contents
+          cp package.json artifact_output/  # Copy package.json
+          cp appspec.yml artifact_output/   # Copy appspec.yml
+          cp -r scripts/* artifact_output/  # Copy scripts directory contents
+          cp -r build/* artifact_output/    # Copy build directory contents
+        elif [ "$CONTENT" = "backend" ]; then
+          echo "Backend update detected. No frontend build artifacts to prepare."
         else
-          echo "Files changed:"
-          echo "$CHANGED_FILES"
-          npm run build
+          echo "No update detected. Skipping build and exiting..."
+          exit 0
         fi
+
 artifacts:
   files:
-    - public/**/*
-    - src/**/*
-    - package.json
-    - appspec.yml
-    - scripts/**/*
-    - build/**/*
+    - "artifact_output/**/*"  # Include everything from the artifact_output directory
+  discard-paths: yes
